@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Human Insight AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-white shadow sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold text-blue-700">
+            Human Insight AI
+        </div>
+        <div class="space-x-6 hidden md:block">
+            <a href="#" class="hover:text-blue-600">About</a>
+            <a href="#" class="hover:text-blue-600">Solutions</a>
+            <a href="#" class="hover:text-blue-600">Contact</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ================= HERO SECTION ================= -->
+<section class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-20 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        Real-time AI Video Analysis
+    </h1>
+    <p class="text-lg max-w-2xl mx-auto mb-8">
+        Upload your video and run human detection, gender classification,
+        ethnicity recognition, fire detection, or fight detection in real-time.
+    </p>
+
+    <label class="cursor-pointer inline-block bg-white text-blue-700 font-bold px-6 py-3 rounded-full shadow hover:bg-gray-200 transition">
+        Upload a Video
+        <input id="videoInput" type="file" accept="video/*" class="hidden">
+    </label>
+
+    <p id="fileName" class="mt-4 text-sm"></p>
+</section>
+
+
+<!-- ================= ACTION BUTTONS ================= -->
+<section id="actions" class="hidden py-12 text-center bg-white">
+
+    <div class="flex flex-wrap justify-center gap-6 mb-8">
+
+        <button onclick="startStream('human')" class="btn">
+            Count Humans
+        </button>
+
+        <button onclick="startStream('gender')" class="btn">
+            Detect Gender
+        </button>
+
+        <button onclick="startStream('ethnicity')" class="btn">
+            Detect Ethnicity
+        </button>
+
+        <button onclick="startStream('fire')" class="btn">
+            Detect Fire
+        </button>
+
+        <button onclick="startStream('fight')" class="btn">
+            Detect Fight
+        </button>
+
+        <button onclick="stopStream()" class="btn bg-red-600 text-white">
+            End Processing
+        </button>
+
+    </div>
+
+    <!-- ================= VIDEO STREAM DISPLAY ================= -->
+    <div class="flex justify-center">
+        <img id="videoStream"
+             class="rounded shadow-lg border border-gray-300 max-w-4xl w-full"
+             />
+    </div>
+
+</section>
+
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-blue-900 text-white text-center py-4 mt-10">
+    © 2025 Human Insight AI • All rights reserved.
+</footer>
+
+
+<!-- ================= STYLES ================= -->
+<style>
+    .btn {
+        background: white;
+        border: 2px solid #2563eb;
+        color: #2563eb;
+        padding: 12px 24px;
+        border-radius: 9999px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #2563eb;
+        color: white;
+        transform: scale(1.05);
+    }
+</style>
+
+
+<!-- ================= SCRIPT ================= -->
+<script>
+
+let uploadedVideoPath = null;
+let currentStream = null;
+
+// ================= Upload Video =================
+document.getElementById("videoInput").addEventListener("change", async function() {
+
+    const file = this.files[0];
+    if (!file) return;
+
+    document.getElementById("fileName").innerText = "Uploading: " + file.name;
+
+    const formData = new FormData();
+    formData.append("video", file);
+
+    const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    uploadedVideoPath = data.path;
+
+    document.getElementById("actions").classList.remove("hidden");
+    document.getElementById("fileName").innerText = "Uploaded: " + file.name;
+});
+
+
+// ================= Start Streaming =================
+function startStream(modelName) {
+
+    if (!uploadedVideoPath) {
+        alert("Please upload a video first.");
+        return;
+    }
+
+    stopStream(); // stop previous stream if running
+
+    const img = document.getElementById("videoStream");
+
+    img.src = `/stream?video=${uploadedVideoPath}&model=${modelName}`;
+
+    currentStream = img.src;
+}
+
+
+// ================= Stop Streaming =================
+function stopStream() {
+    const img = document.getElementById("videoStream");
+    img.src = "";
+    currentStream = null;
+}
+
+</script>
+
+</body>
+</html>
